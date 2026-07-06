@@ -917,53 +917,30 @@ class="btn primary"
    データ
 ========================= */
 
-const STORAGE_KEY=
-'nijigaku-baseball-v2';
+const API_URL=
+'https://nijigaku-baseball-api.s-h-k-p-h-990.workers.dev/api/data';
 
 const placeholder=
 'assets/baseball.png';
 
-let db={
-  teams:[],
-  students:[],
-  history:[]
-};
+let db={teams:[],students:[],history:[]};
 
-try{
-
-  const saved=
-  localStorage.getItem(
-    STORAGE_KEY
-  );
-
-  if(saved){
-    db=JSON.parse(saved);
+async function loadData(){
+  try{
+    const response=await fetch(API_URL);
+    if(!response.ok) throw new Error('データ取得失敗');
+    const data=await response.json();
+    db={
+      teams:Array.isArray(data.teams)?data.teams:[],
+      students:Array.isArray(data.students)?data.students:[],
+      history:Array.isArray(data.history)?data.history:[]
+    };
+    render();
+  }catch(e){
+    console.error(e);
+    alert('共有データの読み込みに失敗しました');
   }
-
-}catch(e){
-  console.error(e);
 }
-
-db.teams=
-Array.isArray(db.teams)
-?
-db.teams
-:
-[];
-
-db.students=
-Array.isArray(db.students)
-?
-db.students
-:
-[];
-
-db.history=
-Array.isArray(db.history)
-?
-db.history
-:
-[];
 
 
 /* =========================
@@ -1075,15 +1052,19 @@ function rankClass(index){
 }
 
 
-function save(){
-
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(db)
-  );
-
-  render();
-
+async function save(){
+  try{
+    const response=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(db)
+    });
+    if(!response.ok) throw new Error('データ保存失敗');
+    render();
+  }catch(e){
+    console.error(e);
+    alert('共有データの保存に失敗しました');
+  }
 }
 
 
@@ -2035,12 +2016,7 @@ resetAll.onclick=()=>{
   };
 
 
-  localStorage.removeItem(
-    STORAGE_KEY
-  );
-
-
-  render();
+  save();
 
 };
 
@@ -2049,7 +2025,7 @@ resetAll.onclick=()=>{
    初期描画
 ========================= */
 
-render();
+loadData();
 
 </script>
 
