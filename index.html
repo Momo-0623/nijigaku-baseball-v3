@@ -923,25 +923,64 @@ const API_URL=
 const placeholder=
 'assets/baseball.png';
 
-let db={teams:[],students:[],history:[]};
+let db={
+  teams:[],
+  students:[],
+  history:[]
+};
 
 async function loadData(){
-  try{
-    const response=await fetch(API_URL);
-    if(!response.ok) throw new Error('データ取得失敗');
-    const data=await response.json();
-    db={
-      teams:Array.isArray(data.teams)?data.teams:[],
-      students:Array.isArray(data.students)?data.students:[],
-      history:Array.isArray(data.history)?data.history:[]
-    };
-    render();
-  }catch(e){
-    console.error(e);
-    alert('共有データの読み込みに失敗しました');
-  }
-}
 
+  try{
+
+    const response=
+    await fetch(
+      API_URL,
+      {
+        method:'GET',
+        cache:'no-store'
+      }
+    );
+
+    if(!response.ok){
+      throw new Error(
+        `データ取得失敗: ${response.status}`
+      );
+    }
+
+    const data=
+    await response.json();
+
+    db={
+      teams:Array.isArray(data.teams)
+      ? data.teams
+      : [],
+
+      students:Array.isArray(data.students)
+      ? data.students
+      : [],
+
+      history:Array.isArray(data.history)
+      ? data.history
+      : []
+    };
+
+    render();
+
+  }catch(error){
+
+    console.error(
+      '共有データ読み込みエラー',
+      error
+    );
+
+    alert(
+      '共有データの読み込みに失敗しました'
+    );
+
+  }
+
+}
 
 /* =========================
    DOM
@@ -1053,18 +1092,71 @@ function rankClass(index){
 
 
 async function save(){
+
   try{
-    const response=await fetch(API_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(db)
-    });
-    if(!response.ok) throw new Error('データ保存失敗');
+
+    console.log(
+      'API保存開始',
+      db
+    );
+
+    const response=
+    await fetch(
+      API_URL,
+      {
+        method:'POST',
+
+        mode:'cors',
+
+        cache:'no-store',
+
+        headers:{
+          'Content-Type':
+          'application/json'
+        },
+
+        body:
+        JSON.stringify(db)
+      }
+    );
+
+    const responseText=
+    await response.text();
+
+    console.log(
+      'API保存応答',
+      response.status,
+      responseText
+    );
+
+    if(!response.ok){
+
+      throw new Error(
+        `データ保存失敗: ${response.status} ${responseText}`
+      );
+
+    }
+
     render();
-  }catch(e){
-    console.error(e);
-    alert('共有データの保存に失敗しました');
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      '共有データ保存エラー',
+      error
+    );
+
+    alert(
+      '共有データの保存に失敗しました。\n\n'+
+      error.message
+    );
+
+    return false;
+
   }
+
 }
 
 
@@ -1691,7 +1783,7 @@ async()=>{
    生徒管理
 ========================= */
 
-addStudent.onclick=()=>{
+addStudent.onclick=async()=>{
 
   const n=
   studentName.value.trim();
@@ -1737,7 +1829,7 @@ addStudent.onclick=()=>{
   studentName.value='';
 
 
-  save();
+  await save();
 
 };
 
@@ -1767,7 +1859,7 @@ window.delStudent=id=>{
    チーム管理
 ========================= */
 
-addTeam.onclick=()=>{
+addTeam.onclick=async()=>{
 
   const n=
   teamName.value.trim();
@@ -1798,7 +1890,7 @@ addTeam.onclick=()=>{
   teamName.value='';
 
 
-  save();
+  await save();
 
 };
 
