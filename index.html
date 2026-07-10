@@ -1,4 +1,4 @@
-       <!doctype html>
+    <!doctype html>
     <html lang="ja">
 
     <head>
@@ -726,7 +726,6 @@
     <th>名前</th>
     <th>チーム</th>
     <th>得点</th>
-    <th>HR</th>
     </tr>
 
     </thead>
@@ -779,7 +778,7 @@
     <tr>
     <th>名前</th>
     <th>チーム</th>
-    <th>得点</th>
+    <th>HR</th>
     <th></th>
     </tr>
 
@@ -1240,6 +1239,16 @@
        描画
     ========================= */
 
+    function homeRunCount(name){
+
+      return db.history.filter(
+        h=>
+        h.name===name &&
+        h.result==='ホームラン'
+      ).length;
+
+    }
+
     function render(){
 
       const selected=
@@ -1290,7 +1299,7 @@
         </td>
 
         <td>
-        ${s.score||0}pt
+        ${homeRunCount(s.name)}本
         </td>
 
         <td>
@@ -1379,13 +1388,6 @@
         </tr>`
       ).join('');
 
-      const homeRunCount=name=>
-      db.history.filter(
-        h=>
-        h.name===name &&
-        h.result==='ホームラン'
-      ).length;
-
       const sortedStudents=
       [...db.students].sort(
         (a,b)=>
@@ -1417,10 +1419,6 @@
 
         <td>
         ${s.score||0}pt
-        </td>
-
-        <td>
-        ${homeRunCount(s.name)}本
         </td>
 
         </tr>`
